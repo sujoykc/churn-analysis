@@ -1,0 +1,117 @@
+{
+  "runAs" : null,
+  "name" : "customer_churn_pipeline",
+  "description" : "",
+  "schedule" : null,
+  "continuous" : null,
+  "maxConcurrentRuns" : 1,
+  "gitConfig" : null,
+  "queue" : null,
+  "path" : null,
+  "jobClusters" : [ {
+    "clusterKey" : "${jobs.dependencies.customer_churn_dev.compute.key}",
+    "newCluster" : null
+  } ],
+  "tasks" : [ {
+    "type" : "NOTEBOOK_TASK",
+    "taskKey" : "churn_data_prep",
+    "dependsOn" : [ ],
+    "runIf" : "ALL_SUCCESS",
+    "maxRetries" : 0,
+    "minRetryIntervalMillis" : null,
+    "isRetryOnTimeout" : false,
+    "notebookPath" : "${bundle.root}/.aidp/artifacts/customer-churn-green/notebooks/02_IntegrateAndCleanseCustomerData.ipynb",
+    "source" : null,
+    "gitConfig" : null,
+    "cluster" : {
+      "clusterKey" : "${jobs.dependencies.customer_churn_dev.compute.key}",
+      "newCluster" : null
+    },
+    "parameters" : [ ],
+    "timeoutSeconds" : null,
+    "isStreaming" : null
+  }, {
+    "type" : "NOTEBOOK_TASK",
+    "taskKey" : "predict_churn",
+    "dependsOn" : [ {
+      "taskKey" : "churn_data_prep",
+      "outcome" : null
+    } ],
+    "runIf" : "ALL_SUCCESS",
+    "maxRetries" : 0,
+    "minRetryIntervalMillis" : null,
+    "isRetryOnTimeout" : null,
+    "notebookPath" : "${bundle.root}/.aidp/artifacts/customer-churn-green/notebooks/04_PredictCustomerChurn.ipynb",
+    "source" : null,
+    "gitConfig" : null,
+    "cluster" : {
+      "clusterKey" : "${jobs.dependencies.customer_churn_dev.compute.key}",
+      "newCluster" : null
+    },
+    "parameters" : [ ],
+    "timeoutSeconds" : null,
+    "isStreaming" : null
+  }, {
+    "type" : "IF_ELSE_TASK",
+    "taskKey" : "weekday_or_weekend_check",
+    "dependsOn" : [ {
+      "taskKey" : "predict_churn",
+      "outcome" : null
+    } ],
+    "runIf" : "ALL_SUCCESS",
+    "maxRetries" : 0,
+    "minRetryIntervalMillis" : null,
+    "isRetryOnTimeout" : null,
+    "expressions" : [ {
+      "key" : "A",
+      "value" : "{{job.start_time.is_weekday}} == true"
+    } ],
+    "condition" : "A",
+    "parameters" : null
+  }, {
+    "type" : "NOTEBOOK_TASK",
+    "taskKey" : "weekday_campaign_ETL",
+    "dependsOn" : [ {
+      "taskKey" : "weekday_or_weekend_check",
+      "outcome" : "true"
+    } ],
+    "runIf" : "ALL_SUCCESS",
+    "maxRetries" : 0,
+    "minRetryIntervalMillis" : null,
+    "isRetryOnTimeout" : null,
+    "notebookPath" : "${bundle.root}/.aidp/artifacts/customer-churn-green/notebooks/05_weekday_churn_campaign.ipynb",
+    "source" : null,
+    "gitConfig" : null,
+    "cluster" : {
+      "clusterKey" : "${jobs.dependencies.customer_churn_dev.compute.key}",
+      "newCluster" : null
+    },
+    "parameters" : [ ],
+    "timeoutSeconds" : null,
+    "isStreaming" : null
+  }, {
+    "type" : "NOTEBOOK_TASK",
+    "taskKey" : "weekend_churn_ETL",
+    "dependsOn" : [ {
+      "taskKey" : "weekday_or_weekend_check",
+      "outcome" : "false"
+    } ],
+    "runIf" : "ALL_SUCCESS",
+    "maxRetries" : 0,
+    "minRetryIntervalMillis" : null,
+    "isRetryOnTimeout" : null,
+    "notebookPath" : "${bundle.root}/.aidp/artifacts/customer-churn-green/notebooks/06_weekend_churn_campaign.ipynb",
+    "source" : null,
+    "gitConfig" : null,
+    "cluster" : {
+      "clusterKey" : "${jobs.dependencies.customer_churn_dev.compute.key}",
+      "newCluster" : null
+    },
+    "parameters" : [ ],
+    "timeoutSeconds" : null,
+    "isStreaming" : null
+  } ],
+  "parameters" : null,
+  "timeoutSeconds" : null,
+  "jobTag" : null
+}
