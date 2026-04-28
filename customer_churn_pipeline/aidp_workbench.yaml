@@ -1,7 +1,0 @@
----
-bundle:
-  name: "customer_churn_pipeline"
-  description: "Workflow for customer churn"
-resources:
-  jobs:
-  - "customer_churn_pipeline"
