@@ -1,0 +1,10 @@
+---
+bundle:
+  name: "customer_churn_pipeline"
+  description: "workflow for customer churn analysis"
+resources:
+  jobs:
+  - "customer_churn_pipeline"
+defaults:
+  variables:
+    job_compute_key: "placeholder_compute"
